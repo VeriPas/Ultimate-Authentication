@@ -84,4 +84,23 @@ export class UserController {
       throw new UnauthorizedException();
     }
   }
+
+  @Post('refresh')
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    try {
+      const refreshToken = request.cookies['refresh_token'];
+
+      const user = await this.jwtService.verifyAsync(refreshToken);
+      const token = await this.userService.getAccessTokenForUser(user);
+      response.status(200);
+      return {
+        token,
+      };
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
 }
