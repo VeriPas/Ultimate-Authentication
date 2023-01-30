@@ -1,4 +1,13 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  SerializeOptions,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from './inputs/user.dto';
 import * as bcryptjs from 'bcryptjs';
@@ -7,9 +16,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { UseInterceptors } from '@nestjs/common/decorators';
 
 @Controller()
+@SerializeOptions({ strategy: 'excludeAll' })
 export class UserController {
   constructor(
     private userService: UserService,
@@ -60,5 +71,17 @@ export class UserController {
     return {
       token: accessToken,
     };
+  }
+
+  @Get('user')
+  @UseInterceptors(ClassSerializerInterceptor)
+  async currentUser(@Req() request: Request) {
+    try {
+      const accessToken = request.headers.authorization.replace('Bearer ', '');
+      const { id } = await this.jwtService.verifyAsync(accessToken);
+      return this.userService.findOne({ id });
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
   }
 }
