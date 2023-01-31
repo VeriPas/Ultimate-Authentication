@@ -17,7 +17,7 @@ import {
 } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
-import { UseInterceptors } from '@nestjs/common/decorators';
+import { HttpCode, UseInterceptors } from '@nestjs/common/decorators';
 
 @Controller()
 @SerializeOptions({ strategy: 'excludeAll' })
@@ -43,6 +43,7 @@ export class UserController {
   }
 
   @Post('login')
+  @HttpCode(200)
   async login(
     @Body('email') email: string,
     @Body('password') password: string,
@@ -63,7 +64,7 @@ export class UserController {
 
     const refreshToken = await this.userService.getRefreshTokenForUser(user);
     // 3) If everything ok, send token to client
-    response.status(200);
+    //response.status(200);
     response.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -86,21 +87,30 @@ export class UserController {
   }
 
   @Post('refresh')
+  @HttpCode(200)
   async refresh(
     @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
+    //@Res({ passthrough: true }) response: Response,
   ) {
     try {
       const refreshToken = request.cookies['refresh_token'];
 
       const user = await this.jwtService.verifyAsync(refreshToken);
       const token = await this.userService.getAccessTokenForUser(user);
-      response.status(200);
+      //response.status(200);
       return {
         token,
       };
     } catch (e) {
       throw new UnauthorizedException();
     }
+  }
+
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) response: Response) {
+    response.clearCookie('refresh_token');
+    return {
+      message: 'success',
+    };
   }
 }
