@@ -22,6 +22,9 @@ export class UserService {
     });
   }
 
+  async update(id: number, options) {
+    return this.userRepository.update(id, options);
+  }
   public async getAccessTokenForUser(user: User): Promise<string> {
     return await this.jwtService.signAsync(
       {

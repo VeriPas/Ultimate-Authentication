@@ -7,11 +7,11 @@ import { UserService } from '../user/user.service';
 import { User } from '../user/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Reset]),
-    TypeOrmModule.forFeature([User]),
     MailerModule.forRoot({
       transport: {
         host: '0.0.0.0',
@@ -21,8 +21,9 @@ import { MailerModule } from '@nestjs-modules/mailer';
         from: 'veripass@example.com',
       },
     }),
+    UserModule,
   ],
   controllers: [ResetController],
-  providers: [ResetService, UserService, JwtService],
+  providers: [ResetService],
 })
 export class ResetModule {}

@@ -13,4 +13,10 @@ export class ResetService {
   async save(body) {
     return this.resetService.save(body);
   }
+
+  async findOne(options) {
+    return this.resetService.findOne({
+      where: options,
+    });
+  }
 }
